@@ -10,4 +10,9 @@ TSB_AD/models/KShapeAD.py
 TSB_AD/models/KShapeAD_tslearn.py
 TSB_AD/main_M.py
 benchmark_exp/thresh/
-dist/
+dist/polluted/
+TSB_AD/quality/experiments/data/
+
+# experiment services: real credentials
+TSB_AD/quality/experiments/database/.env
+TSB_AD/quality/experiments/notebooks/

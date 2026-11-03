@@ -1,0 +1,54 @@
+# Postgres, MinIO and Adminer for the experiments:
+#   docker compose -f TSB_AD/quality/experiments/database/docker-compose.yml up -d
+# Credentials and ports come from `.env` (see .env.example). schema.sql is applied on first start.
+name: tsbad-quality
+
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-tsbad}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tsbad}
+      POSTGRES_DB: ${POSTGRES_DB:-tsbad_quality}
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:  # S3 API on :9100, console on :9101
+    # The official image is not on the Docker store; this is the local one. Override with MINIO_IMAGE.
+    image: ${MINIO_IMAGE:-minio/minio:RELEASE.2025-09-07T16-13-09Z}
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-tsbad}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-tsbad-secret}  # at least 8 characters
+    ports:
+      - "${MINIO_PORT:-9100}:9000"
+      - "${MINIO_CONSOLE_PORT:-9101}:9001"
+    volumes:
+      - miniodata:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  adminer:  # optional web UI for Postgres
+    image: adminer:latest
+    restart: unless-stopped
+    ports:
+      - "${ADMINER_PORT:-8082}:8080"
+    depends_on:
+      - postgres
+
+volumes:
+  pgdata:
+  miniodata:

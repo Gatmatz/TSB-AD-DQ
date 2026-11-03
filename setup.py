@@ -39,6 +39,14 @@ setup(
         'transformers>=4.38.0',
         'torch>=1.8.0',
     ],
+    package_data={'TSB_AD.quality.experiments': ['lists/*.csv'], 'TSB_AD.quality.experiments.database': ['schema.sql', 'docker-compose.yml']},
+    extras_require={
+        # Pollution of time series (TSB_AD.quality). JENGA and Icewafl run in a private Python 3.10
+        # environment with its own Java, built by `uv` on first use (see TSB_AD/quality/runtime.py).
+        'quality': ['uv'],
+        # Experiments that store their results in Postgres (TSB_AD.quality.experiments).
+        'quality-experiments': ['uv', 'psycopg2-binary', 'minio>=7.2.20', 'pypots>=1.5'],
+    },
     python_requires='>=3.8',  # Minimum version requirement of the package
     entry_points={},
     license="Apache-2.0 license",
