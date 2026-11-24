@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS experiments (
     affiliation_f DOUBLE PRECISION,
     execution_time DOUBLE PRECISION,    -- seconds the detector took
     imputation_rmse DOUBLE PRECISION,   -- RMSE of the imputed points vs. the original ones; NULL unless imputed
+    internal_gap DOUBLE PRECISION,      -- mean(q) of anomalous minus normal windows (internal.py); NULL for other detectors
     -- what the pollution was asked to do vs. what it did (TSB_AD.quality.report), e.g. {"affected": 402, "swaps": 201}
     desired JSONB,
     actual JSONB,

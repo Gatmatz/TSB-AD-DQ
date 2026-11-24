@@ -18,10 +18,10 @@ import numpy as np
 
 from TSB_AD.quality import pollute
 from TSB_AD.quality.enums import APPLICABILITY, LABEL_COL, POLLUTION_TYPES, VALUE_COL
-from TSB_AD.quality.experiments import database
+from TSB_AD.quality.experiments import database, internal
 from TSB_AD.quality.experiments.cleaning import impute_missing
 from TSB_AD.quality.experiments.database import minio
-from TSB_AD.quality.experiments.enums.detectors import DETECTOR_PARAMS
+from TSB_AD.quality.experiments.enums.detectors import DETECTOR_PARAMS, INTERNAL_DETECTORS
 from TSB_AD.quality.experiments.enums.metrics import METRIC_COLUMNS
 
 
@@ -39,8 +39,9 @@ def seed_everything(seed: int) -> None:
 
 def run_detector(values, label, detector: str, train_size: int, window: int, seed: int) -> dict:
     """The `experiments` columns of TSB-AD's `get_metrics` for `detector` (tuned hyperparameters plus
-    `DETECTOR_PARAMS`) on `values`, plus `execution_time`, the seconds of the detector alone. `window` is the
-    metrics' window; detectors that estimate their own window do it on `values`, as in TSB-AD."""
+    `DETECTOR_PARAMS`) on `values`, plus `execution_time`, the seconds of the detector alone, and `internal_gap`
+    (`internal.py`; None for the other detectors). `window` is the metrics' window; detectors that estimate their
+    own window do it on `values`, as in TSB-AD."""
     from sklearn.preprocessing import MinMaxScaler
 
     from TSB_AD.evaluation.metrics import get_metrics
@@ -56,7 +57,10 @@ def run_detector(values, label, detector: str, train_size: int, window: int, see
     data = np.asarray(values, dtype=float).reshape(-1, 1)
     seed_everything(seed)
     start = time.perf_counter()
-    if detector in Semisupervise_AD_Pool:
+    clf = None
+    if detector in INTERNAL_DETECTORS:
+        output, clf = internal.fit(detector, data, params)
+    elif detector in Semisupervise_AD_Pool:
         output = run_Semisupervise_AD(detector, data[:train_size], data, **params)
     elif detector in Unsupervise_AD_Pool:
         output = run_Unsupervise_AD(detector, data, **params)
@@ -69,7 +73,8 @@ def run_detector(values, label, detector: str, train_size: int, window: int, see
     pred = score > np.mean(score) + 3 * np.std(score)  # threshold as in TSB_AD/main.py
     metrics = get_metrics(score, label, slidingWindow=window, pred=pred)
     return {**{column: float(metrics[name]) for name, column in METRIC_COLUMNS.items()},
-            "execution_time": seconds}
+            "execution_time": seconds,
+            "internal_gap": internal.internal_gap(detector, clf, data, label) if clf else None}
 
 
 @dataclass

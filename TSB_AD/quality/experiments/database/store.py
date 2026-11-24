@@ -14,7 +14,7 @@ from TSB_AD.quality.experiments.enums.metrics import METRIC_COLUMNS
 
 _KEY = ("dataset", "detector", "pollution", "params", "seed", "imputation", "applicability")
 _COLUMNS = (*_KEY, "execution_profile", "window_length", *METRIC_COLUMNS.values(), "execution_time",
-            "imputation_rmse", "desired", "actual")
+            "imputation_rmse", "internal_gap", "desired", "actual")
 _KEY_MATCH = " AND ".join(f"{c} = %({c})s" for c in _KEY)
 
 

@@ -19,7 +19,7 @@ CORRUPTION_SETTINGS: dict[CorruptionType, dict[str, list]] = {
         "fraction": [0.05, 0.1, 0.2],
         "mechanism": ["MCAR", "MNAR_high", "MNAR_extreme"],
     },
-    CorruptionType.BURST_MISSING: {"fraction": [0.05, 0.1, 0.2], "num_bursts": [1, 5, 10]},
+    CorruptionType.BURST_MISSING: {"fraction": [0.05, 0.1, 0.2], "num_bursts": [1, 5, 10], "mechanism": ["MCAR", "MNAR_high", "MNAR_extreme"]},
     CorruptionType.GILBERT_ELLIOTT: {"a": [0.01, 0.05, 0.1], "b": [0.1, 0.25, 0.5]},
     # CorruptionType.POINT_SWAP: {"fraction": [0.01, 0.1, 0.4]},
     # CorruptionType.SEGMENT_SWAP: {"fraction": [0.05, 0.1, 0.2], "num_swaps": [1, 5, 20]},
@@ -31,10 +31,10 @@ CORRUPTION_SETTINGS: dict[CorruptionType, dict[str, list]] = {
 # default settings (`cleaning.py`); each one is a separate run, the pollution is shared. Names: `pypots.imputation`
 # classes in lower case, e.g. saits, lerp, locf, mean, median. A learned one that needs more than `n_steps` also needs
 # its required parameters in `enums/imputations.py`.
-IMPUTATIONS = ["saits"]
+IMPUTATIONS = ["saits", "lerp"]
 
 EVA_LIST = Path(__file__).resolve().parent / "lists" / "TSB-AD-U-Eva-Small.csv"  # the series to run (header + file names)
-DETECTORS = ["IForest", "LOF"]  # names from TSB-AD's detector pools; each runs with its tuned hyperparameters
+DETECTORS = ["Sub_PCA", "MatrixProfile"]  # names from TSB-AD's detector pools; each runs with its tuned hyperparameters
 
 SEEDS = [4286, 48608, 72078]  # seeds for the pollution and the detectors; each run is repeated with every seed
 
